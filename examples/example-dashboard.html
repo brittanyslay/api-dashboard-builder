@@ -6,6 +6,8 @@
 <title>Dashboard</title>
 <!--
   api-dashboard-builder template
+  Author: Brittany Slay (https://brittanyslay.com) · Noncommercial use only (PolyForm NC 1.0.0)
+  Required Notice: Copyright Brittany Slay (https://brittanyslay.com)
   --------------------------------
   A self-contained, zero-dependency dashboard. Charts are drawn with inline SVG,
   so there is nothing to install and nothing to load from a CDN.
@@ -79,7 +81,7 @@
 /* ============================ CONFIGURE ME ============================ */
 
 const THEME = {
-  title: "Northwind SaaS — Growth",
+  title: "Demand & Pipeline — RevOps",
   brand: "#8B5CF6",
   logo:  "",
   gradient: ["#8B5CF6","#EC4899","#F59E0B"]   // brittanyslay.com gradient
@@ -87,35 +89,41 @@ const THEME = {
 
 // Example uses inline `data` on every tile so it renders with no network.
 // In a real build, replace `data:` with `source:{url:"..."}` and let `map` read the API JSON.
+// Metrics here are marketing / ABM / RevOps: what a demand leader actually watches.
 const TILES = [
   {
-    id:"mrr", type:"kpi", size:"lg", title:"Monthly Recurring Revenue", subtitle:"live",
-    data:{ current: 128400, change_pct: 6.2 },
-    map:(r)=>({ value:r.current, delta:r.change_pct, deltaLabel:"vs last month", format:"usd" })
+    id:"infpipe", type:"kpi", size:"lg", title:"Influenced pipeline", subtitle:"this quarter",
+    data:{ current: 4200000, change_pct: 12 },
+    map:(r)=>({ value:r.current, delta:r.change_pct, deltaLabel:"vs last quarter", format:"usd" })
   },
   {
-    id:"users", type:"kpi", size:"sm", title:"Active Accounts",
-    data:{ count: 2140, change_pct: 3.1 },
-    map:(r)=>({ value:r.count, delta:r.change_pct, deltaLabel:"MoM", format:"compact" })
+    id:"srcrev", type:"kpi", size:"sm", title:"Marketing-sourced revenue",
+    data:{ amount: 1800000, change_pct: 8 },
+    map:(r)=>({ value:r.amount, delta:r.change_pct, deltaLabel:"QoQ", format:"usd" })
   },
   {
-    id:"churn", type:"kpi", size:"sm", title:"Net Revenue Churn",
-    data:{ rate: -1.4 },
-    map:(r)=>({ value:r.rate, delta:r.rate, deltaLabel:"lower is better", format:"pct" })
+    id:"mql2sql", type:"kpi", size:"sm", title:"MQL to SQL conversion",
+    data:{ rate: 34, change_pts: 3.2 },
+    map:(r)=>({ value:r.rate, delta:r.change_pts, deltaLabel:"pts QoQ", format:"pct" })
   },
   {
-    id:"signups", type:"line", size:"md", title:"New signups", subtitle:"last 8 weeks",
-    data:{ weekly:[{w:"W1",n:82},{w:"W2",n:91},{w:"W3",n:76},{w:"W4",n:118},{w:"W5",n:134},{w:"W6",n:121},{w:"W7",n:150},{w:"W8",n:173}] },
-    map:(r)=>({ points:r.weekly.map(p=>({x:p.w,y:p.n})) })
+    id:"pipe_trend", type:"line", size:"md", title:"Pipeline created", subtitle:"last 8 months",
+    data:{ monthly:[{m:"Jan",v:420000},{m:"Feb",v:510000},{m:"Mar",v:470000},{m:"Apr",v:640000},{m:"May",v:720000},{m:"Jun",v:690000},{m:"Jul",v:830000},{m:"Aug",v:960000}] },
+    map:(r)=>({ points:r.monthly.map(p=>({x:p.m,y:p.v})) })
   },
   {
-    id:"byplan", type:"bar", size:"md", title:"Revenue by plan",
-    data:{ plans:[{name:"Starter",mrr:18200},{name:"Team",mrr:44100},{name:"Business",mrr:39800},{name:"Enterprise",mrr:26300}] },
-    map:(r)=>({ items:r.plans.map(p=>({label:p.name,value:p.mrr})), format:"usd" })
+    id:"by_channel", type:"bar", size:"md", title:"Pipeline by channel",
+    data:{ ch:[{name:"ABM",amt:1400000},{name:"Events",amt:1100000},{name:"Paid",amt:900000},{name:"Content",amt:520000},{name:"Outbound",amt:310000}] },
+    map:(r)=>({ items:r.ch.map(c=>({label:c.name,value:c.amt})), format:"usd" })
   },
   {
-    id:"sources", type:"donut", size:"md", title:"Signups by source",
-    data:{ src:[{k:"Organic",v:540},{k:"Paid",v:310},{k:"Referral",v:220},{k:"Outbound",v:130}] },
+    id:"abm_tiers", type:"bar", size:"md", title:"Engaged target accounts by tier",
+    data:{ tiers:[{t:"Tier 1",n:42},{t:"Tier 2",n:88},{t:"Tier 3",n:140}] },
+    map:(r)=>({ items:r.tiers.map(t=>({label:t.t,value:t.n})) })
+  },
+  {
+    id:"by_source", type:"donut", size:"md", title:"Pipeline by source",
+    data:{ src:[{k:"Marketing",v:46},{k:"Sales",v:30},{k:"Partner",v:14},{k:"Expansion",v:10}] },
     map:(r)=>({ items:r.src.map(s=>({label:s.k,value:s.v})) })
   }
 ];
