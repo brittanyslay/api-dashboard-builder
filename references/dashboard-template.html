@@ -56,7 +56,7 @@
   .kpi .val{font-size:clamp(2rem,4.5vw,3rem);font-weight:800;letter-spacing:-.02em;line-height:1.05}
   .kpi .delta{display:inline-flex;align-items:center;gap:5px;font-size:.82rem;font-weight:700;margin-top:8px}
   .kpi .delta.up{color:var(--good)} .kpi .delta.down{color:var(--bad)} .kpi .delta.flat{color:var(--muted)}
-  .chart{width:100%;height:150px;display:block;overflow:visible}
+  .chart{width:100%;height:var(--chart-h,150px);display:block;overflow:visible}
   .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:12px}
   .legend span{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;color:var(--muted);font-weight:600}
   .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
@@ -88,7 +88,10 @@ const THEME = {
   //   gradient: true                       -> a tasteful default gradient
   //   gradient: ["#8B5CF6","#EC4899","#F59E0B"]  -> your own stops (e.g. a brand gradient)
   //   gradient: null                       -> flat `brand` color
-  gradient: null
+  gradient: null,
+  // Chart height in px -> controls the dashboard's overall ratio. Lower = shorter,
+  // more landscape; higher = taller charts. 120 compact · 150 default · 190 tall.
+  chartHeight: 150
 };
 
 /*
@@ -163,6 +166,7 @@ function applyTheme(){
   document.documentElement.style.setProperty("--brand", THEME.brand);
   document.documentElement.style.setProperty("--accent", THEME.brand);
   document.documentElement.style.setProperty("--grad", cssGradient());
+  if(THEME.chartHeight) document.documentElement.style.setProperty("--chart-h", THEME.chartHeight+"px");
   $("#title").textContent = THEME.title || "Dashboard";
   document.title = THEME.title || "Dashboard";
   if(THEME.logo){ const l=$("#logo"); l.src=THEME.logo; l.hidden=false; }

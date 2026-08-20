@@ -69,7 +69,8 @@ on this; a `#4F46E5` default looks fine.
 
 ### 5. Build it
 Copy `references/dashboard-template.html` and fill in two blocks only:
-- `THEME`: title, brand hex, optional logo (URL or data: URI).
+- `THEME`: title, brand hex, optional logo, optional `gradient`, and `chartHeight`
+  (the ratio control: lower = shorter, more landscape; 120 compact, 150 default, 190 tall).
 - `TILES`: one object per metric. For each tile set `type`, `size`, `title`, a
   `source` (`{url, headers, method}`) and a `map(raw)` function that turns the endpoint's
   JSON into the shape the tile needs (documented at the top of the template).

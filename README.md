@@ -20,6 +20,8 @@ HTML file that pulls the numbers live.
   the numbers, stamps a last-updated time, and works on desktop and mobile.
 - **Wears your brand.** Optional: hand it a hex color and a logo, or a full brand gradient,
   and the whole thing themes to match.
+- **You control the ratio.** A `chartHeight` setting tunes the dashboard's proportions,
+  from compact and landscape to tall — no other layout math required.
 
 ## Install
 
