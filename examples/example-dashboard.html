@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dashboard</title>
+<!--
+  api-dashboard-builder template
+  --------------------------------
+  A self-contained, zero-dependency dashboard. Charts are drawn with inline SVG,
+  so there is nothing to install and nothing to load from a CDN.
+
+  You fill in two things:
+    1. THEME   - title, brand color, optional logo.
+    2. TILES   - one object per tile. Each tile pulls a number or a series from an
+                 API endpoint (or from inline `data`) and renders it as the chart
+                 type that fits the question it answers.
+
+  Keep it to 5-9 tiles. Put the single most important number top-left (size:'lg').
+  See references/chart-selection.md for which `type` to use, and intake.md for how
+  to decide what to measure before you build.
+-->
+<style>
+  :root{
+    --brand:#4F46E5;               /* set from the user's brand color */
+    --accent:#4F46E5;
+    --bg:#F6F7F9; --card:#FFFFFF; --ink:#0B1220; --muted:#67728A;
+    --line:#E7EAF0; --good:#0E9F6E; --bad:#E02424;
+    --radius:16px;
+    --font:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#0B1220;--card:#131B2E;--ink:#EAEEF6;--muted:#93A0B8;--line:#243049;}
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;padding:clamp(16px,3vw,32px)}
+  .dash{max-width:1180px;margin:0 auto}
+  header.top{display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+  header.top .logo{height:34px;width:auto;border-radius:8px}
+  header.top h1{font-size:clamp(1.15rem,2vw,1.5rem);font-weight:800;letter-spacing:-.01em}
+  header.top .stamp{margin-left:auto;color:var(--muted);font-size:.8rem;font-weight:600}
+  header.top .stamp b{color:var(--ink)}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(12px,1.6vw,18px)}
+  .tile{grid-column:span 4;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 16px;min-width:0;display:flex;flex-direction:column;box-shadow:0 24px 40px -32px rgba(15,23,42,.35)}
+  .tile.sm{grid-column:span 3}
+  .tile.md{grid-column:span 6}
+  .tile.lg{grid-column:span 6}
+  .tile.xl{grid-column:span 12}
+  @media(max-width:820px){.tile,.tile.sm,.tile.md,.tile.lg{grid-column:span 6}}
+  @media(max-width:520px){.tile,.tile.sm,.tile.md,.tile.lg,.tile.xl{grid-column:span 12}}
+  .t-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .t-title{font-size:.82rem;font-weight:700;color:var(--muted);letter-spacing:.01em}
+  .t-sub{font-size:.72rem;color:var(--muted);font-weight:600;opacity:.8}
+  .kpi .val{font-size:clamp(2rem,4.5vw,3rem);font-weight:800;letter-spacing:-.02em;line-height:1.05}
+  .kpi .delta{display:inline-flex;align-items:center;gap:5px;font-size:.82rem;font-weight:700;margin-top:8px}
+  .kpi .delta.up{color:var(--good)} .kpi .delta.down{color:var(--bad)} .kpi .delta.flat{color:var(--muted)}
+  .chart{width:100%;height:auto;display:block;overflow:visible}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:12px}
+  .legend span{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;color:var(--muted);font-weight:600}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .state{color:var(--muted);font-size:.82rem;font-weight:600;padding:14px 0}
+  .state.err{color:var(--bad)}
+  .skeleton{background:linear-gradient(90deg,var(--line),transparent,var(--line));background-size:200% 100%;animation:sh 1.2s infinite;border-radius:8px;height:64px}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  a.src{color:var(--muted);font-size:.7rem;text-decoration:none;margin-top:auto;padding-top:10px}
+</style>
+</head>
+<body>
+<div class="dash">
+  <header class="top">
+    <img id="logo" class="logo" alt="" hidden />
+    <h1 id="title">Dashboard</h1>
+    <div class="stamp">Updated <b id="stamp">—</b></div>
+  </header>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+/* ============================ CONFIGURE ME ============================ */
+
+const THEME = {
+  title: "Northwind SaaS — Growth",
+  brand: "#8B5CF6",
+  logo:  "",
+  gradient: ["#8B5CF6","#EC4899","#F59E0B"]   // brittanyslay.com gradient
+};
+
+// Example uses inline `data` on every tile so it renders with no network.
+// In a real build, replace `data:` with `source:{url:"..."}` and let `map` read the API JSON.
+const TILES = [
+  {
+    id:"mrr", type:"kpi", size:"lg", title:"Monthly Recurring Revenue", subtitle:"live",
+    data:{ current: 128400, change_pct: 6.2 },
+    map:(r)=>({ value:r.current, delta:r.change_pct, deltaLabel:"vs last month", format:"usd" })
+  },
+  {
+    id:"users", type:"kpi", size:"sm", title:"Active Accounts",
+    data:{ count: 2140, change_pct: 3.1 },
+    map:(r)=>({ value:r.count, delta:r.change_pct, deltaLabel:"MoM", format:"compact" })
+  },
+  {
+    id:"churn", type:"kpi", size:"sm", title:"Net Revenue Churn",
+    data:{ rate: -1.4 },
+    map:(r)=>({ value:r.rate, delta:r.rate, deltaLabel:"lower is better", format:"pct" })
+  },
+  {
+    id:"signups", type:"line", size:"md", title:"New signups", subtitle:"last 8 weeks",
+    data:{ weekly:[{w:"W1",n:82},{w:"W2",n:91},{w:"W3",n:76},{w:"W4",n:118},{w:"W5",n:134},{w:"W6",n:121},{w:"W7",n:150},{w:"W8",n:173}] },
+    map:(r)=>({ points:r.weekly.map(p=>({x:p.w,y:p.n})) })
+  },
+  {
+    id:"byplan", type:"bar", size:"md", title:"Revenue by plan",
+    data:{ plans:[{name:"Starter",mrr:18200},{name:"Team",mrr:44100},{name:"Business",mrr:39800},{name:"Enterprise",mrr:26300}] },
+    map:(r)=>({ items:r.plans.map(p=>({label:p.name,value:p.mrr})), format:"usd" })
+  },
+  {
+    id:"sources", type:"donut", size:"md", title:"Signups by source",
+    data:{ src:[{k:"Organic",v:540},{k:"Paid",v:310},{k:"Referral",v:220},{k:"Outbound",v:130}] },
+    map:(r)=>({ items:r.src.map(s=>({label:s.k,value:s.v})) })
+  }
+];
+
+/* ========================== ENGINE (leave as-is) ========================== */
+
+const $ = (s,el=document)=>el.querySelector(s);
+
+// Gradient: [] of hex stops, or null for flat brand color.
+const GRADIENT = THEME.gradient===true ? ["#8B5CF6","#EC4899","#F59E0B"]
+  : (Array.isArray(THEME.gradient) && THEME.gradient.length>=2 ? THEME.gradient : null);
+const cssGradient = ()=> GRADIENT ? `linear-gradient(100deg,${GRADIENT.join(",")})` : `var(--brand)`;
+// SVG <defs> for a chart's gradient fill/stroke; returns "" when flat.
+function gradDefs(id){
+  if(!GRADIENT) return "";
+  const stops=GRADIENT.map((c,i)=>`<stop offset="${Math.round(i/(GRADIENT.length-1)*100)}%" stop-color="${c}"></stop>`).join("");
+  return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">${stops}</linearGradient></defs>`;
+}
+const paint = id => GRADIENT ? `url(#${id})` : "var(--brand)";
+// Sample a color along the gradient at t in [0,1] (for distinct donut slices / legend).
+function sampleGradient(t){
+  if(!GRADIENT) return "var(--brand)";
+  const seg=(GRADIENT.length-1)*Math.min(1,Math.max(0,t));
+  const i=Math.min(GRADIENT.length-2, Math.floor(seg)), f=seg-i;
+  return hexLerp(GRADIENT[i], GRADIENT[i+1], f);
+}
+function hexLerp(a,b,f){
+  const pa=hex2rgb(a), pb=hex2rgb(b);
+  return `rgb(${Math.round(pa[0]+(pb[0]-pa[0])*f)},${Math.round(pa[1]+(pb[1]-pa[1])*f)},${Math.round(pa[2]+(pb[2]-pa[2])*f)})`;
+}
+const hex2rgb = h=>{const c=h.replace("#","");return [parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)];};
+const fmt = (n, kind="number")=>{
+  if(n===null||n===undefined||isNaN(n)) return "—";
+  if(kind==="usd") return "$"+compact(n);
+  if(kind==="pct") return (Math.round(n*10)/10)+"%";
+  if(kind==="compact") return compact(n);
+  return Number(n).toLocaleString("en-US");
+};
+function compact(n){
+  const a=Math.abs(n);
+  if(a>=1e9) return trim(n/1e9)+"B";
+  if(a>=1e6) return trim(n/1e6)+"M";
+  if(a>=1e3) return trim(n/1e3)+"K";
+  return trim(n);
+}
+const trim = n => (Math.round(n*10)/10).toString();
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function applyTheme(){
+  document.documentElement.style.setProperty("--brand", THEME.brand);
+  document.documentElement.style.setProperty("--accent", THEME.brand);
+  document.documentElement.style.setProperty("--grad", cssGradient());
+  $("#title").textContent = THEME.title || "Dashboard";
+  document.title = THEME.title || "Dashboard";
+  if(THEME.logo){ const l=$("#logo"); l.src=THEME.logo; l.hidden=false; }
+  const now=new Date();
+  $("#stamp").textContent = now.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+}
+
+async function loadTile(tile){
+  if(tile.data!==undefined) return tile.map ? tile.map(tile.data) : tile.data;
+  const s=tile.source||{};
+  const res=await fetch(s.url,{headers:s.headers||{},method:s.method||"GET"});
+  if(!res.ok) throw new Error("HTTP "+res.status);
+  const raw=await res.json();
+  return tile.map ? tile.map(raw) : raw;
+}
+
+function tileShell(tile){
+  const el=document.createElement("div");
+  el.className="tile "+(tile.size||"md")+" "+tile.type;
+  el.innerHTML=`<div class="t-head"><div class="t-title">${esc(tile.title||"")}</div>`+
+    (tile.subtitle?`<div class="t-sub">${esc(tile.subtitle)}</div>`:"")+`</div>`+
+    `<div class="body"><div class="skeleton"></div></div>`;
+  return el;
+}
+
+function render(tile, el, v){
+  const body=$(".body",el);
+  const gid="g_"+(tile.id||Math.random().toString(36).slice(2,7));
+  if(tile.type==="kpi") body.innerHTML=renderKPI(v);
+  else if(tile.type==="bar") body.innerHTML=renderBar(v,gid);
+  else if(tile.type==="line") body.innerHTML=renderLine(v,gid);
+  else if(tile.type==="donut") body.innerHTML=renderDonut(v);
+  else body.innerHTML=`<div class="state">Unsupported tile type: ${esc(tile.type)}</div>`;
+}
+
+function renderKPI(v){
+  const raw=fmt(v.value, v.format);
+  const val=GRADIENT
+    ? `<span style="background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.08em;display:inline-block">${raw}</span>`
+    : raw;
+  let d="";
+  if(v.delta!==undefined && v.delta!==null && !isNaN(v.delta)){
+    const dir=v.delta>0?"up":v.delta<0?"down":"flat";
+    const arr=v.delta>0?"▲":v.delta<0?"▼":"—";
+    d=`<div class="delta ${dir}">${arr} ${Math.abs(Math.round(v.delta*10)/10)}% <span style="color:var(--muted);font-weight:600">${esc(v.deltaLabel||"")}</span></div>`;
+  }
+  return `<div class="val">${val}</div>${d}`;
+}
+
+function renderBar(v,gid){
+  const items=(v.items||[]).slice(0,8);
+  if(!items.length) return `<div class="state">No data</div>`;
+  const max=Math.max(...items.map(i=>i.value),0)||1;
+  const W=100, gap=6, n=items.length, bw=(W-gap*(n-1))/n, H=120;
+  let bars="",labels="";
+  items.forEach((it,i)=>{
+    const h=Math.max(2,(it.value/max)*(H-4));
+    const x=i*(bw+gap);
+    bars+=`<rect x="${x}" y="${H-h}" width="${bw}" height="${h}" rx="2" fill="${paint(gid)}"></rect>`;
+    labels+=`<div style="flex:1;text-align:center;font-size:.66rem;color:var(--muted);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(it.label)}</div>`;
+  });
+  const top=fmt(max, v.format);
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Bar chart, peak ${top}">${gradDefs(gid)}${bars}</svg>`+
+    `<div style="display:flex;gap:6px;margin-top:6px">${labels}</div>`;
+}
+
+function renderLine(v,gid){
+  const pts=(v.points||[]);
+  if(pts.length<2) return `<div class="state">Not enough points</div>`;
+  const ys=pts.map(p=>p.y), max=Math.max(...ys), min=Math.min(...ys);
+  const span=(max-min)||1, W=100, H=120, n=pts.length;
+  const X=i=>(i/(n-1))*W;
+  const Y=y=>H-4-((y-min)/span)*(H-10);
+  let d="",area="";
+  pts.forEach((p,i)=>{ const cmd=i?"L":"M"; d+=`${cmd}${X(i).toFixed(1)},${Y(p.y).toFixed(1)} `; });
+  area=`M0,${H} `+pts.map((p,i)=>`L${X(i).toFixed(1)},${Y(p.y).toFixed(1)}`).join(" ")+` L${W},${H} Z`;
+  const first=esc(pts[0].x), last=esc(pts[n-1].x);
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Line chart from ${first} to ${last}">${gradDefs(gid)}`+
+    `<path d="${area}" fill="${paint(gid)}" opacity="0.12"></path>`+
+    `<path d="${d}" fill="none" stroke="${paint(gid)}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>`+
+    `</svg>`+
+    `<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:.66rem;color:var(--muted);font-weight:600"><span>${first}</span><span>${last}</span></div>`;
+}
+
+function renderDonut(v){
+  const items=(v.items||[]).slice(0,5);
+  const total=items.reduce((s,i)=>s+i.value,0)||1;
+  const colors=donutColors(items.length);
+  const R=42, C=2*Math.PI*R; let off=0, segs="";
+  items.forEach((it,i)=>{
+    const frac=it.value/total, len=frac*C;
+    segs+=`<circle cx="50" cy="50" r="${R}" fill="none" stroke="${colors[i]}" stroke-width="14" `+
+      `stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 50 50)"></circle>`;
+    off+=len;
+  });
+  const leg=items.map((it,i)=>`<span><i style="background:${colors[i]}"></i>${esc(it.label)} ${Math.round(it.value/total*100)}%</span>`).join("");
+  return `<svg class="chart" viewBox="0 0 100 100" style="max-height:150px" role="img" aria-label="Donut chart">${segs}`+
+    `<text x="50" y="54" text-anchor="middle" font-size="13" font-weight="800" fill="var(--ink)">${fmt(total, v.format)}</text></svg>`+
+    `<div class="legend">${leg}</div>`;
+}
+function donutColors(n){
+  const out=[];
+  for(let i=0;i<n;i++){
+    out.push(GRADIENT ? sampleGradient(n>1 ? i/(n-1) : 0) : shade(THEME.brand, i*0.16));
+  }
+  return out;
+}
+function shade(hex,amt){
+  const c=hex.replace("#",""); let r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);
+  r=Math.round(r+(255-r)*amt); g=Math.round(g+(255-g)*amt); b=Math.round(b+(255-b)*amt);
+  return `rgb(${r},${g},${b})`;
+}
+
+async function boot(){
+  applyTheme();
+  const grid=$("#grid");
+  const shells=TILES.map(t=>{ const el=tileShell(t); grid.appendChild(el); return el; });
+  await Promise.all(TILES.map(async (tile,i)=>{
+    try{ const v=await loadTile(tile); render(tile, shells[i], v); }
+    catch(err){ $(".body",shells[i]).innerHTML=`<div class="state err">Couldn't load: ${esc(err.message)}</div>`; }
+  }));
+}
+document.addEventListener("DOMContentLoaded", boot);
+</script>
+</body>
+</html>
