@@ -5,10 +5,6 @@ A [Claude Code](https://claude.ai/code) skill that reads your endpoints, recomme
 worth measuring, picks the right chart for each metric, and ships a single self-contained
 HTML file that pulls the numbers live.
 
-![A RevOps dashboard built with this skill: influenced pipeline, marketing-sourced revenue, MQL-to-SQL conversion, a pipeline-created trend line, pipeline-by-channel bars, engaged accounts by tier, and a pipeline-by-source donut, all in a violet-to-amber gradient](docs/preview.png)
-
-*A marketing / RevOps dashboard the skill produced. Every chart is drawn with inline SVG in a single self-contained file, with no libraries or CDN. The gradient is optional and set from your brand colors.*
-
 ## What it does
 
 - **Asks the fewest questions it can.** It looks at what your endpoints actually return,
