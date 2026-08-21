@@ -7,7 +7,7 @@ HTML file that pulls the numbers live.
 
 ![A RevOps dashboard built with this skill: influenced pipeline, marketing-sourced revenue, MQL-to-SQL conversion, a pipeline-created trend line, pipeline-by-channel bars, engaged accounts by tier, and a pipeline-by-source donut, all in a violet-to-amber gradient](docs/preview.png)
 
-*A marketing / RevOps dashboard the skill produced. Every chart is drawn with inline SVG. No libraries, no CDN, one file. The gradient is optional and set from your brand colors.*
+*A marketing / RevOps dashboard the skill produced. Every chart is drawn with inline SVG in a single self-contained file, with no libraries or CDN. The gradient is optional and set from your brand colors.*
 
 ## What it does
 
@@ -21,7 +21,7 @@ HTML file that pulls the numbers live.
 - **Wears your brand.** Optional: hand it a hex color and a logo, or a full brand gradient,
   and the whole thing themes to match.
 - **You control the ratio.** A `chartHeight` setting tunes the dashboard's proportions,
-  from compact and landscape to tall — no other layout math required.
+  from compact and landscape to tall, with no other layout math required.
 
 ## Install
 

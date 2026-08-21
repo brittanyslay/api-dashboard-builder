@@ -36,5 +36,5 @@ scoreboard and none of the game.
 ## Don't measure what the data can't support
 Every proposed metric must map to a real field in a real endpoint response. If a metric
 the user wants needs a source you don't have, leave the tile out and tell them what
-endpoint would unlock it. An honest 6-tile dashboard beats a 9-tile one with two made-up
+endpoint would surface it. An honest 6-tile dashboard beats a 9-tile one with two made-up
 numbers.

@@ -72,7 +72,7 @@
   <header class="top">
     <img id="logo" class="logo" alt="" hidden />
     <h1 id="title">Dashboard</h1>
-    <div class="stamp">Updated <b id="stamp">—</b></div>
+    <div class="stamp">Updated <b id="stamp">-</b></div>
   </header>
   <div class="grid" id="grid"></div>
 </div>
@@ -146,7 +146,7 @@ function hexLerp(a,b,f){
 }
 const hex2rgb = h=>{const c=h.replace("#","");return [parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)];};
 const fmt = (n, kind="number")=>{
-  if(n===null||n===undefined||isNaN(n)) return "—";
+  if(n===null||n===undefined||isNaN(n)) return "-";
   if(kind==="usd") return "$"+compact(n);
   if(kind==="pct") return (Math.round(n*10)/10)+"%";
   if(kind==="compact") return compact(n);
@@ -210,7 +210,7 @@ function renderKPI(v){
   let d="";
   if(v.delta!==undefined && v.delta!==null && !isNaN(v.delta)){
     const dir=v.delta>0?"up":v.delta<0?"down":"flat";
-    const arr=v.delta>0?"▲":v.delta<0?"▼":"—";
+    const arr=v.delta>0?"▲":v.delta<0?"▼":"-";
     d=`<div class="delta ${dir}">${arr} ${Math.abs(Math.round(v.delta*10)/10)}% <span style="color:var(--muted);font-weight:600">${esc(v.deltaLabel||"")}</span></div>`;
   }
   return `<div class="val">${val}</div>${d}`;

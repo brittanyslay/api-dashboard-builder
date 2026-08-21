@@ -35,7 +35,7 @@ Copies `references/dashboard-template.html`, sets `THEME` and one tile per metri
 representative tiles:
 
 ```js
-const THEME = { title:"Northwind SaaS — Growth", brand:"#8B5CF6",
+const THEME = { title:"Northwind SaaS: Growth", brand:"#8B5CF6",
                 gradient:["#8B5CF6","#EC4899","#F59E0B"] };
 
 const TILES = [
