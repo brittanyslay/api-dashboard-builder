@@ -1,7 +1,8 @@
 # Worked example
 
-How a real run goes, start to finish. This is the dashboard in `examples/example-dashboard.html`
-and the screenshot in the README.
+How a real run goes, start to finish, for a SaaS team. For a rendered, openable
+dashboard, see `examples/example-dashboard.html` (a RevOps example built from this same
+template).
 
 ## 1. User brings endpoints
 > "Build me a dashboard for our SaaS. We have a billing API and an accounts API."
@@ -43,21 +44,28 @@ const TILES = [
     source:{ url:"/billing/mrr" },
     map:(r)=>({ value:r.current, delta:r.change_pct, deltaLabel:"vs last month", format:"usd" }) },
 
+  { id:"churn", type:"kpi", size:"sm", title:"Net revenue churn", subtitle:"lower is better",
+    goodWhenDown:true,                               // a drop here is good news -> green
+    source:{ url:"/billing/churn" },
+    map:(r)=>({ value:r.rate, deltaLabel:"MoM", format:"pct" }) },
+
   { id:"signups", type:"line", size:"md", title:"New signups", subtitle:"last 8 weeks",
     source:{ url:"/accounts/signups_weekly" },
     map:(r)=>({ points:r.weekly.map(p=>({ x:p.w, y:p.n })) }) },
-  // ... four more
+  // ... three more
 ];
 ```
 
 Note the pattern: `source.url` is the endpoint, and `map(raw)` reshapes that endpoint's
 JSON into the tile's shape. Nothing else in the template changes.
 
-## 4. Claude tests it before handing it over
-Opens the file, confirms all six tiles load real numbers, none stuck on a skeleton, no
-console errors, gradient renders. If `/billing/mrr` had failed CORS from the browser,
-Claude would swap that tile to `data:` with the sample response and tell the user tiles
-1-3 are live, 4-6 are a snapshot, here's how to make them all live.
+## 4. Claude critiques its own output before handing it over
+Renders the file and runs the SKILL.md checklist: all six tiles load real numbers, none
+stuck on a skeleton, no console errors, both light and dark read well, each chart fits its
+data, and the churn tile's down arrow shows green because it is `goodWhenDown`. If
+`/billing/mrr` had failed CORS from the browser, Claude would swap that tile to `data:`
+with the sample response and tell the user tiles 1-3 are live, 4-6 are a snapshot, and
+here's how to make them all live.
 
 ## 5. Handoff
 One HTML file. The user opens it, or drops it on any static host. It refetches every time

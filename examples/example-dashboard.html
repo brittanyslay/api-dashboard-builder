@@ -13,7 +13,8 @@
   so there is nothing to install and nothing to load from a CDN.
 
   You fill in two things:
-    1. THEME   - title, brand color, optional logo.
+    1. THEME   - title, brand color, optional logo, optional gradient, chart height,
+                 optional live auto-refresh.
     2. TILES   - one object per tile. Each tile pulls a number or a series from an
                  API endpoint (or from inline `data`) and renders it as the chart
                  type that fits the question it answers.
@@ -27,12 +28,12 @@
     --brand:#4F46E5;               /* set from the user's brand color */
     --accent:#4F46E5;
     --bg:#F6F7F9; --card:#FFFFFF; --ink:#0B1220; --muted:#67728A;
-    --line:#E7EAF0; --good:#0E9F6E; --bad:#E02424;
+    --line:#E7EAF0; --good:#0E9F6E; --bad:#E02424; --grid:#EDEFF4;
     --radius:16px;
     --font:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   }
   @media (prefers-color-scheme: dark){
-    :root{--bg:#0B1220;--card:#131B2E;--ink:#EAEEF6;--muted:#93A0B8;--line:#243049;}
+    :root{--bg:#0B1220;--card:#131B2E;--ink:#EAEEF6;--muted:#93A0B8;--line:#243049;--grid:#1C2740;}
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;padding:clamp(16px,3vw,32px)}
@@ -40,9 +41,10 @@
   header.top{display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap}
   header.top .logo{height:34px;width:auto;border-radius:8px}
   header.top h1{font-size:clamp(1.15rem,2vw,1.5rem);font-weight:800;letter-spacing:-.01em}
-  header.top .stamp{margin-left:auto;color:var(--muted);font-size:.8rem;font-weight:600}
+  header.top .stamp{margin-left:auto;color:var(--muted);font-size:.8rem;font-weight:600;text-align:right}
   header.top .stamp b{color:var(--ink)}
-  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(12px,1.6vw,18px)}
+  header.top .stamp .live{color:var(--good)}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(12px,1.6vw,18px);align-items:stretch}
   .tile{grid-column:span 4;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 16px;min-width:0;display:flex;flex-direction:column;box-shadow:0 24px 40px -32px rgba(15,23,42,.35)}
   .tile.sm{grid-column:span 3}
   .tile.md{grid-column:span 6}
@@ -52,19 +54,28 @@
   @media(max-width:520px){.tile,.tile.sm,.tile.md,.tile.lg,.tile.xl{grid-column:span 12}}
   .t-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
   .t-title{font-size:.82rem;font-weight:700;color:var(--muted);letter-spacing:.01em}
-  .t-sub{font-size:.72rem;color:var(--muted);font-weight:600;opacity:.8}
+  .t-sub{font-size:.72rem;color:var(--muted);font-weight:600;opacity:.8;white-space:nowrap}
+  .body{display:flex;flex-direction:column;flex:1}
   .kpi .val{font-size:clamp(2rem,4.5vw,3rem);font-weight:800;letter-spacing:-.02em;line-height:1.05}
   .kpi .delta{display:inline-flex;align-items:center;gap:5px;font-size:.82rem;font-weight:700;margin-top:8px}
   .kpi .delta.up{color:var(--good)} .kpi .delta.down{color:var(--bad)} .kpi .delta.flat{color:var(--muted)}
   .chart{width:100%;height:var(--chart-h,150px);display:block;overflow:visible}
+  .vals{display:flex;gap:6px;margin-bottom:6px}
+  .vals span{flex:1;text-align:center;font-size:.68rem;color:var(--ink);font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .xlabels{display:flex;gap:6px;margin-top:6px}
+  .xlabels span{flex:1;text-align:center;font-size:.66rem;color:var(--muted);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .caption{display:flex;justify-content:space-between;margin-top:6px;font-size:.66rem;color:var(--muted);font-weight:600}
+  .caption b{color:var(--ink)}
   .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:12px}
   .legend span{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;color:var(--muted);font-weight:600}
   .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
   .state{color:var(--muted);font-size:.82rem;font-weight:600;padding:14px 0}
   .state.err{color:var(--bad)}
-  .skeleton{background:linear-gradient(90deg,var(--line),transparent,var(--line));background-size:200% 100%;animation:sh 1.2s infinite;border-radius:8px;height:64px}
+  .retry{margin-top:8px;font:inherit;font-size:.74rem;font-weight:700;color:var(--brand);background:transparent;border:1px solid var(--line);border-radius:8px;padding:5px 11px;cursor:pointer}
+  .retry:hover{border-color:var(--brand)}
+  .skeleton{background:linear-gradient(90deg,var(--line),transparent,var(--line));background-size:200% 100%;animation:sh 1.2s infinite;border-radius:8px;height:64px;flex:1;min-height:64px}
   @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  a.src{color:var(--muted);font-size:.7rem;text-decoration:none;margin-top:auto;padding-top:10px}
+  @media (prefers-reduced-motion: reduce){.skeleton{animation:none}}
 </style>
 </head>
 <body>
@@ -72,7 +83,7 @@
   <header class="top">
     <img id="logo" class="logo" alt="" hidden />
     <h1 id="title">Dashboard</h1>
-    <div class="stamp">Updated <b id="stamp">-</b></div>
+    <div class="stamp">Updated <b id="stamp">-</b><span id="live" class="live" hidden></span></div>
   </header>
   <div class="grid" id="grid"></div>
 </div>
@@ -85,7 +96,8 @@ const THEME = {
   brand: "#8B5CF6",
   logo:  "",
   gradient: ["#8B5CF6","#EC4899","#F59E0B"],  // brittanyslay.com gradient
-  chartHeight: 150                            // ratio control: lower = more landscape
+  chartHeight: 150,                            // ratio control: lower = more landscape
+  refresh: 0                                   // live demo would set e.g. 60 (seconds)
 };
 
 // Example uses inline `data` on every tile so it renders with no network.
@@ -103,14 +115,15 @@ const TILES = [
     map:(r)=>({ value:r.amount, delta:r.change_pct, deltaLabel:"QoQ", format:"usd" })
   },
   {
-    id:"mql2sql", type:"kpi", size:"sm", title:"MQL to SQL conversion",
-    data:{ rate: 34, change_pts: 3.2 },
-    map:(r)=>({ value:r.rate, delta:r.change_pts, deltaLabel:"pts QoQ", format:"pct" })
+    id:"cycle", type:"kpi", size:"sm", title:"Sales cycle length", subtitle:"lower is better",
+    goodWhenDown:true,
+    data:{ days: 52, change_pct: -9 },
+    map:(r)=>({ value:r.days, delta:r.change_pct, deltaLabel:"days, QoQ", format:"number" })
   },
   {
     id:"pipe_trend", type:"line", size:"md", title:"Pipeline created", subtitle:"last 8 months",
     data:{ monthly:[{m:"Jan",v:420000},{m:"Feb",v:510000},{m:"Mar",v:470000},{m:"Apr",v:640000},{m:"May",v:720000},{m:"Jun",v:690000},{m:"Jul",v:830000},{m:"Aug",v:960000}] },
-    map:(r)=>({ points:r.monthly.map(p=>({x:p.m,y:p.v})) })
+    map:(r)=>({ points:r.monthly.map(p=>({x:p.m,y:p.v})), format:"usd" })
   },
   {
     id:"by_channel", type:"bar", size:"md", title:"Pipeline by channel",
@@ -181,16 +194,33 @@ function applyTheme(){
   $("#title").textContent = THEME.title || "Dashboard";
   document.title = THEME.title || "Dashboard";
   if(THEME.logo){ const l=$("#logo"); l.src=THEME.logo; l.hidden=false; }
+  if(THEME.refresh>0){ const el=$("#live"); el.hidden=false; el.textContent=" · live, every "+THEME.refresh+"s"; }
+  stampNow();
+}
+function stampNow(){
   const now=new Date();
   $("#stamp").textContent = now.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
 }
 
+// Abortable fetch with a timeout so a hung endpoint fails a tile instead of the page.
+async function fetchJSON(s){
+  const ctrl = new AbortController();
+  const t = setTimeout(()=>ctrl.abort(), s.timeout||15000);
+  try{
+    const res = await fetch(s.url,{headers:s.headers||{},method:s.method||"GET",signal:ctrl.signal});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    return await res.json();
+  }catch(err){
+    if(err.name==="AbortError") throw new Error("Request timed out");
+    throw err;
+  }finally{
+    clearTimeout(t);
+  }
+}
+
 async function loadTile(tile){
   if(tile.data!==undefined) return tile.map ? tile.map(tile.data) : tile.data;
-  const s=tile.source||{};
-  const res=await fetch(s.url,{headers:s.headers||{},method:s.method||"GET"});
-  if(!res.ok) throw new Error("HTTP "+res.status);
-  const raw=await res.json();
+  const raw = await fetchJSON(tile.source||{});
   return tile.map ? tile.map(raw) : raw;
 }
 
@@ -206,23 +236,28 @@ function tileShell(tile){
 function render(tile, el, v){
   const body=$(".body",el);
   const gid="g_"+(tile.id||Math.random().toString(36).slice(2,7));
-  if(tile.type==="kpi") body.innerHTML=renderKPI(v);
+  if(tile.type==="kpi") body.innerHTML=renderKPI(v, tile);
   else if(tile.type==="bar") body.innerHTML=renderBar(v,gid);
   else if(tile.type==="line") body.innerHTML=renderLine(v,gid);
   else if(tile.type==="donut") body.innerHTML=renderDonut(v);
   else body.innerHTML=`<div class="state">Unsupported tile type: ${esc(tile.type)}</div>`;
 }
 
-function renderKPI(v){
+function renderKPI(v, tile){
+  if(v.value===null||v.value===undefined||isNaN(v.value)) return `<div class="state">No value</div>`;
   const raw=fmt(v.value, v.format);
   const val=GRADIENT
     ? `<span style="background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.08em;display:inline-block">${raw}</span>`
     : raw;
   let d="";
   if(v.delta!==undefined && v.delta!==null && !isNaN(v.delta)){
-    const dir=v.delta>0?"up":v.delta<0?"down":"flat";
-    const arr=v.delta>0?"▲":v.delta<0?"▼":"-";
-    d=`<div class="delta ${dir}">${arr} ${Math.abs(Math.round(v.delta*10)/10)}% <span style="color:var(--muted);font-weight:600">${esc(v.deltaLabel||"")}</span></div>`;
+    // Direction of the number vs. whether that direction is good. For "lower is
+    // better" metrics (goodWhenDown), a drop is good news, so color flips.
+    const rising = v.delta>0, falling = v.delta<0;
+    const goodWhenDown = tile && tile.goodWhenDown;
+    const tone = (!rising && !falling) ? "flat" : ((rising && !goodWhenDown)||(falling && goodWhenDown)) ? "up" : "down";
+    const arr = rising ? "▲" : falling ? "▼" : "-";
+    d=`<div class="delta ${tone}">${arr} ${Math.abs(Math.round(v.delta*10)/10)}% <span style="color:var(--muted);font-weight:600">${esc(v.deltaLabel||"")}</span></div>`;
   }
   return `<div class="val">${val}</div>${d}`;
 }
@@ -232,16 +267,18 @@ function renderBar(v,gid){
   if(!items.length) return `<div class="state">No data</div>`;
   const max=Math.max(...items.map(i=>i.value),0)||1;
   const W=100, gap=6, n=items.length, bw=(W-gap*(n-1))/n, H=120;
-  let bars="",labels="";
+  let bars="",labels="",values="";
   items.forEach((it,i)=>{
     const h=Math.max(2,(it.value/max)*(H-4));
     const x=i*(bw+gap);
-    bars+=`<rect x="${x}" y="${H-h}" width="${bw}" height="${h}" rx="2" fill="${paint(gid)}"></rect>`;
-    labels+=`<div style="flex:1;text-align:center;font-size:.66rem;color:var(--muted);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(it.label)}</div>`;
+    const vlabel=`${esc(it.label)}: ${fmt(it.value, v.format)}`;
+    bars+=`<rect x="${x}" y="${H-h}" width="${bw}" height="${h}" rx="2" fill="${paint(gid)}"><title>${vlabel}</title></rect>`;
+    values+=`<span title="${vlabel}">${fmt(it.value, v.format)}</span>`;
+    labels+=`<span title="${esc(it.label)}">${esc(it.label)}</span>`;
   });
-  const top=fmt(max, v.format);
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Bar chart, peak ${top}">${gradDefs(gid)}${bars}</svg>`+
-    `<div style="display:flex;gap:6px;margin-top:6px">${labels}</div>`;
+  return `<div class="vals">${values}</div>`+
+    `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Bar chart, peak ${fmt(max, v.format)}">${gradDefs(gid)}${bars}</svg>`+
+    `<div class="xlabels">${labels}</div>`;
 }
 
 function renderLine(v,gid){
@@ -254,23 +291,24 @@ function renderLine(v,gid){
   let d="",area="";
   pts.forEach((p,i)=>{ const cmd=i?"L":"M"; d+=`${cmd}${X(i).toFixed(1)},${Y(p.y).toFixed(1)} `; });
   area=`M0,${H} `+pts.map((p,i)=>`L${X(i).toFixed(1)},${Y(p.y).toFixed(1)}`).join(" ")+` L${W},${H} Z`;
-  const first=esc(pts[0].x), last=esc(pts[n-1].x);
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Line chart from ${first} to ${last}">${gradDefs(gid)}`+
+  const first=esc(pts[0].x), last=esc(pts[n-1].x), lastVal=fmt(pts[n-1].y, v.format);
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Line chart from ${first} to ${last}, latest ${lastVal}">${gradDefs(gid)}`+
     `<path d="${area}" fill="${paint(gid)}" opacity="0.12"></path>`+
     `<path d="${d}" fill="none" stroke="${paint(gid)}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>`+
     `</svg>`+
-    `<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:.66rem;color:var(--muted);font-weight:600"><span>${first}</span><span>${last}</span></div>`;
+    `<div class="caption"><span>${first}</span><span>${last} · <b>${lastVal}</b></span></div>`;
 }
 
 function renderDonut(v){
   const items=(v.items||[]).slice(0,5);
+  if(!items.length) return `<div class="state">No data</div>`;
   const total=items.reduce((s,i)=>s+i.value,0)||1;
   const colors=donutColors(items.length);
   const R=42, C=2*Math.PI*R; let off=0, segs="";
   items.forEach((it,i)=>{
-    const frac=it.value/total, len=frac*C;
+    const frac=it.value/total, len=frac*C, pct=Math.round(frac*100);
     segs+=`<circle cx="50" cy="50" r="${R}" fill="none" stroke="${colors[i]}" stroke-width="14" `+
-      `stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 50 50)"></circle>`;
+      `stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 50 50)"><title>${esc(it.label)}: ${pct}%</title></circle>`;
     off+=len;
   });
   const leg=items.map((it,i)=>`<span><i style="background:${colors[i]}"></i>${esc(it.label)} ${Math.round(it.value/total*100)}%</span>`).join("");
@@ -291,14 +329,30 @@ function shade(hex,amt){
   return `rgb(${r},${g},${b})`;
 }
 
+// Load one tile into its shell. On failure, show the error plus a Retry button.
+async function runTile(tile, el){
+  const body=$(".body",el);
+  body.innerHTML=`<div class="skeleton"></div>`;
+  try{
+    const v=await loadTile(tile);
+    render(tile, el, v);
+  }catch(err){
+    body.innerHTML=`<div class="state err">Couldn't load: ${esc(err.message)}</div>`+
+      (tile.data===undefined ? `<button class="retry" type="button">Retry</button>` : "");
+    const btn=$(".retry",body);
+    if(btn) btn.addEventListener("click", ()=>runTile(tile, el));
+  }
+}
+
 async function boot(){
   applyTheme();
   const grid=$("#grid");
   const shells=TILES.map(t=>{ const el=tileShell(t); grid.appendChild(el); return el; });
-  await Promise.all(TILES.map(async (tile,i)=>{
-    try{ const v=await loadTile(tile); render(tile, shells[i], v); }
-    catch(err){ $(".body",shells[i]).innerHTML=`<div class="state err">Couldn't load: ${esc(err.message)}</div>`; }
-  }));
+  const loadAll = ()=>Promise.all(TILES.map((tile,i)=>runTile(tile, shells[i])));
+  await loadAll();
+  if(THEME.refresh>0){
+    setInterval(async ()=>{ await loadAll(); stampNow(); }, THEME.refresh*1000);
+  }
 }
 document.addEventListener("DOMContentLoaded", boot);
 </script>

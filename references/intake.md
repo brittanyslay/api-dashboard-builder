@@ -11,6 +11,22 @@ endpoints, infer the metrics, and confirm with one question.
 2. **Auth, if any.** How a request is authorized (bearer token, header key, query param).
    You'll put this in `source.headers`. Flag the security caveat (below).
 
+## Walking an OpenAPI / Swagger spec to a tile plan
+A spec hands you every path and response schema at once, so you can skip the sample-paste
+step. Walk it like this:
+1. **List the GET paths** that return metric-shaped data. Skip auth, webhooks, and write
+   endpoints. A `/metrics`, `/billing`, `/accounts`, `/usage`, or `/reports` group is where
+   the numbers usually live.
+2. **Read each response schema** under `components.schemas` (or the inline `responses`).
+   A scalar field like `mrr` or `count` is a `kpi`. An array of objects with a label field
+   and a number field is a `bar` or `donut`. An array bucketed by date/week/month is a `line`.
+3. **Note auth once** from `securitySchemes` (bearer, API key header, query param), and
+   carry it into every tile's `source.headers`.
+4. **Take the `example` values** the spec provides as your `map()` test data, so you can
+   render and verify before the real key is ever used.
+Then propose the 5-9 tiles and confirm, exactly as below. You still ask Q1; the spec just
+means you never have to ask for shapes.
+
 ## What to infer instead of asking
 - **Candidate metrics**: derive them from the fields present. `/subscriptions` with a
   `mrr` field implies MRR; a `status` field implies active/churned counts; a `created_at`
