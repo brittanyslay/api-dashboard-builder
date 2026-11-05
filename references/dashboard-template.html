@@ -120,7 +120,8 @@ const THEME = {
     kpi   -> { value:Number, format?, delta?:Number, deltaLabel?:String }
     bar   -> { items:[{label, value}], format? }
     line  -> { points:[{x, y}], format? }   // x = label, y = number
-    donut -> { items:[{label, value}] }
+    donut -> { items:[{label, value}], format?, centerLabel? }  // values are counts; center shows their total
+
   `format` is optional: 'number' | 'usd' | 'pct' | 'compact' (default 'number').
 
   Optional per-tile flags:
@@ -307,8 +308,12 @@ function renderDonut(v){
     off+=len;
   });
   const leg=items.map((it,i)=>`<span><i style="background:${colors[i]}"></i>${esc(it.label)} ${Math.round(it.value/total*100)}%</span>`).join("");
+  // Center shows the total of the slice values; label it (default "Total", or
+  // pass centerLabel) so it never reads as a bare, unitless number.
+  const centerLabel=esc((v.centerLabel||"Total")).toUpperCase();
   return `<svg class="chart" viewBox="0 0 100 100" style="max-height:150px" role="img" aria-label="Donut chart">${segs}`+
-    `<text x="50" y="54" text-anchor="middle" font-size="13" font-weight="800" fill="var(--ink)">${fmt(total, v.format)}</text></svg>`+
+    `<text x="50" y="50" text-anchor="middle" font-size="13" font-weight="800" fill="var(--ink)">${fmt(total, v.format)}</text>`+
+    `<text x="50" y="60" text-anchor="middle" font-size="5.2" font-weight="700" letter-spacing="0.4" fill="var(--muted)">${centerLabel}</text></svg>`+
     `<div class="legend">${leg}</div>`;
 }
 function donutColors(n){
