@@ -15,7 +15,8 @@ This template supports four types on purpose. Most real dashboards need only the
 - **A single number beats a one-bar bar chart.** If a "comparison" has one item, it's a KPI.
 - **Donuts are easy to misread.** Never use one for more than 5 slices, and never to compare two donuts to each other. When in doubt, bar.
 - **Add a delta to KPIs** whenever a prior period exists. "128.4K, up 6.2%" answers "and is that good?" in the same glance.
-- **Match direction to meaning.** For "lower is better" metrics (churn, cost, latency), say so in the label so a down arrow doesn't read as bad news.
+- **Match direction to meaning.** For "lower is better" metrics (churn, cost, latency), set `goodWhenDown:true` on the tile and say so in the label, so a down arrow reads as good news in green, not bad news in red.
+- **Label the values, don't make people guess.** The template writes each bar's value above it and the line's latest value in its caption, and every mark has a hover tooltip. A chart you can read exact numbers off of beats a prettier one you can only eyeball.
 
 ## What this template does NOT draw
 Scatter, histogram, heatmap, and geo/maps are out of scope by design. If a metric truly

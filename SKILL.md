@@ -35,7 +35,8 @@ Ask the user to share one of, in order of preference:
 
 If they only give endpoint names, ask for one sample response per endpoint you plan to
 use. You need the response shape to write the mapping, so this is the one thing you
-cannot skip. Read `references/intake.md` for exactly what to collect and what to infer.
+cannot skip. Read `references/intake.md` for exactly what to collect and what to infer,
+including how to walk an OpenAPI/Swagger spec straight to a tile plan.
 
 ### 2. Propose what to measure (grounded in the endpoints)
 From the response shapes, list the metrics the data can actually support, then
@@ -69,14 +70,20 @@ on this; a `#4F46E5` default looks fine.
 
 ### 5. Build it
 Copy `references/dashboard-template.html` and fill in two blocks only:
-- `THEME`: title, brand hex, optional logo, optional `gradient`, and `chartHeight`
-  (the ratio control: lower = shorter, more landscape; 120 compact, 150 default, 190 tall).
+- `THEME`: title, brand hex, optional logo, optional `gradient`, `chartHeight`
+  (the ratio control: lower = shorter, more landscape; 120 compact, 150 default, 190 tall),
+  and optional `refresh` (seconds between live refetches; 0 or omitted loads once).
 - `TILES`: one object per metric. For each tile set `type`, `size`, `title`, a
-  `source` (`{url, headers, method}`) and a `map(raw)` function that turns the endpoint's
-  JSON into the shape the tile needs (documented at the top of the template).
+  `source` (`{url, headers, method, timeout}`) and a `map(raw)` function that turns the
+  endpoint's JSON into the shape the tile needs (documented at the top of the template).
+  For a "lower is better" metric (churn, cost, latency, cycle time), add `goodWhenDown:true`
+  so a drop shows green and a rise shows red; also say "lower is better" in the title or
+  subtitle so the arrow reads right at a glance.
 
 Everything else in the template is the engine; leave it alone. It draws every chart with
-inline SVG, so there is nothing to install and nothing loaded from a CDN.
+inline SVG, so there is nothing to install and nothing loaded from a CDN. Bars carry their
+value labels, lines show the latest value, every mark has a hover tooltip, and a failed
+tile shows an error with a Retry button instead of a dead card.
 
 Handle the real-world details:
 - **Auth**: put tokens in `source.headers` (e.g. `{"Authorization":"Bearer ..."}`).
@@ -87,12 +94,24 @@ Handle the real-world details:
   paste sample responses into each tile's `data:` field instead of `source:`.
 - **Freshness**: the template already stamps "Updated ..." at load. Keep it.
 
-### 6. Test before you hand it over
-Open the file and confirm every tile loads real numbers, no tile is stuck on its
-skeleton, and nothing errors. If an endpoint can't be reached from the browser (CORS,
-auth), fall back to `data:` with the sample response so the dashboard still renders, and
-tell the user which tiles are live vs. sample. A dashboard that half-loads is worse than
-one honest snapshot.
+### 6. Critique your own output, then hand it over
+Do not hand back a dashboard you have not looked at. Render the file (headless browser is
+fine) and run it against this checklist before the user ever sees it. Fix, then re-render.
+
+- **It renders clean.** Every tile shows real numbers. No tile is stuck on its skeleton,
+  no console error, both light and dark themes read well.
+- **Each chart fits its data.** One number is a `kpi`, not a one-bar bar. A trend is a
+  `line`, not a row of KPIs. A donut has 5 slices or fewer and shows shares, not raw
+  counts that should have been a bar. If a chart does not fit, change the type.
+- **Deltas point the right way.** Every "lower is better" tile has `goodWhenDown:true` and
+  says so, so a down arrow reads as good news.
+- **Nothing is invented.** Every tile traces to a real field in a real response. If you
+  could not source a number, the tile is gone and you noted what endpoint would surface it.
+
+If an endpoint can't be reached from the browser (CORS, auth), fall back to `data:` with
+the sample response so the dashboard still renders, and tell the user which tiles are live
+vs. sample and how to make the rest live. A dashboard that half-loads is worse than one
+honest snapshot.
 
 ## Rules
 - 5-9 tiles. If you want more, you're building two dashboards; say so.

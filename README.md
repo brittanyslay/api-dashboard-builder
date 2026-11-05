@@ -1,5 +1,7 @@
 # API Dashboard Builder
 
+![A live API dashboard: KPI tiles, a pipeline trend line, labeled bar charts, and a donut, all in a brand gradient](docs/preview.png)
+
 Turn the APIs you already have into a clean, live dashboard, without a 20-question intake.
 A [Claude Code](https://claude.ai/code) skill that reads your endpoints, recommends what's
 worth measuring, picks the right chart for each metric, and ships a single self-contained
@@ -11,11 +13,16 @@ HTML file that pulls the numbers live.
   proposes 5-9 metrics worth watching, and confirms with one question instead of an
   interrogation.
 - **Picks the right chart.** Big number, bar, line, or donut, chosen from the question each
-  metric answers, not from what looks flashy.
+  metric answers, not from what looks flashy. Bars carry their value labels, lines show the
+  latest value, "lower is better" metrics color their arrows correctly, and every mark has a
+  hover tooltip.
 - **Builds a real, live dashboard.** A single HTML file that fetches your endpoints, formats
-  the numbers, stamps a last-updated time, and works on desktop and mobile.
+  the numbers, stamps a last-updated time, and works on desktop and mobile. A failed endpoint
+  shows an error with a Retry button, not a dead card, and fetches time out instead of hanging.
+- **Can stay live.** Set a `refresh` interval and the dashboard refetches on its own and
+  restamps the time.
 - **Wears your brand.** Optional: hand it a hex color and a logo, or a full brand gradient,
-  and the whole thing themes to match.
+  and the whole thing themes to match, in light and dark.
 - **You control the ratio.** A `chartHeight` setting tunes the dashboard's proportions,
   from compact and landscape to tall, with no other layout math required.
 
